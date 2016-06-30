@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "cpmx7-hackathon",
+  "private_key_id": "d12564e6cfec549da5e6b9fa8d21966f6d7aec14",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCSIHJMXRhFIVeQ\nJoulQostcmv2NmJOjc0BO6FdzrkKTNczrdwPMpyqHo9HNTFO2awKlvTqBQIjdVYq\ngX2gjzn+2bYzto5bukTQfVnIggx/UqbiWHqSS5RB9DRM8EHol1mfG1VUQzwubQ5o\n/+3S/AD/7RVA40gQXFwQ+kVe7lcWzzX4sJcBxoJ0BNjmmI4tCcDU9W0eVKchMUja\npK6qpTtrqm2jZgM7y6rBxvRZvsVuJs4BFPerGEWaWRFF1E4qTn9VQ+kSzV1D3EyX\nPKSgtLM+/iTwDIRC5HgM5Y2DWs6us5hZaYUIwXVE5ffDRDWWi4XoFIXH2F0ezXBN\nHq0YFXpjAgMBAAECggEAOw/kQttJ6P8t/jSmMtivmmHqIy0eFPQZjUsF0P2yKuid\n/uRh0r65NcV+UeC9Gkq+z9TuDvyRPbW6axnFpjTd0xU6ILLD3W1vTPmtZW6zEG9e\nxpPOjvz/Yp0K2qItcY5jCf0pQxKd64Hm1ifDf4id+tNfyMdUpFBAYhhWG6WoC659\nWWIpDv2/muR5ZzfXu8hj2nYy4cgrHMIo8MfegJEE8h480C8zOXq6llL88y74R2Vy\nQ/4vl5qqFsznVZA4RU0F6VUg707eQTXwsOeZLrcpk1idiVIKB1cT/uPm8Ff83qOj\n81+S+dNUSv79Yv6erJlwFLtF7+ZzzT9jsfpgv4KnmQKBgQDbt6PHOQVN3Xi2GRq2\nAi8JwFGG0zV+8HxfLjPAZWvpO8Z16yg5zbB+zquf3SggqcODpr0KTyR6w/2qgram\nLt1NniiQtW0yurC4byHRfo4uamMRLR4KPDbA5QZH2LivTR7EIg8Rmub9aMvu+Pvm\nYOMcoJSfHlUxPiZjsimOlr0dJQKBgQCqQdPzqC2MEF3Daww4fH93rwTIIY3/t2z2\n3bZHmBnFgsoz+5UrFQoh+binakZ0Jtd1rJLJjf32VQ6nuzlu6LC+w3oSq62txI5X\nD1UIUrriPdbmoR61UD4s7SILiGmS/X31EzQUdAuZzsCgGJLYKVqgK+AYCS0pRWRs\nahzrdYMW5wKBgHmx5iGzQG/XSkO59eR3oywIfF9r3oZ3lrt1MK7QvgtJ02t+myIg\n/i/OMprx+IbW4HarxKrQGQlyQq7NhXLYJDUYc6lrA5eEddtBmn6ZVRD6VfKuhaPv\no/gFIgxrSie2VGMX5ja/EE+tWr764zK/2SsC+i6Ds3X50XOIu6HBde+NAoGAKOAA\n+MBpnvTW7fGnT3BkUeGM7ldP9hKdcG8uMeYMWeTakrxVxbAZbKq9cEQNghlJJRE3\ndHhIfnlROWezlDL9K+9WQWFCIzPLUI93xLXH9EUQcPJBoxoOs06DG+22GvoM4Weo\n2zg5CMYgbM85gff7r/SYqmyZkQz93SFkrArcXAUCgYBn41huTngquddh3cF8FArQ\n4QguPWc4zR+ICs9WyCa8pdwRmfDDUi9XTGCBBuv/Ed1iFF5c3XkTCuCEX2TasJQo\nbSn1Gd+vjh//OIC2X+QMG7cH9gDUk8gi6lIA1Kg5+WzIPDYsrgRMCoXIdNlLT8wq\ncb5lzVf5u9hRPwZEjHPLCA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "telegram-service@cpmx7-hackathon.iam.gserviceaccount.com",
+  "client_id": "110116398253385517837",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/telegram-service%40cpmx7-hackathon.iam.gserviceaccount.com"
+}
