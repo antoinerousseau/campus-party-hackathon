@@ -1,0 +1,32 @@
+{
+  "name": "campus-party-hackathon",
+  "version": "0.1.0",
+  "description": "An instant messaging bot build on AI made to help people building their house in Mexico",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antoinerousseau/campus-party-hackathon.git"
+  },
+  "keywords": [
+    "campus",
+    "party",
+    "hackathon",
+    "mexico",
+    "bot",
+    "telegram",
+    "ai"
+  ],
+  "author": "Antoine Rousseau <antoine@rousseau.im>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/antoinerousseau/campus-party-hackathon/issues"
+  },
+  "homepage": "https://github.com/antoinerousseau/campus-party-hackathon#readme",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.23.3",
+    "telegraf": "^2.3.3"
+  }
+}
