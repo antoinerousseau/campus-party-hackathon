@@ -23,6 +23,8 @@ const telegrafOptions = {
   },
 }
 
+const TelegrafJS = require('node_modules/telegraf/lib/telegraf')
+
 const telegraf = new Telegraf(process.env.BOT_TOKEN, telegrafOptions)
 telegraf.use(Telegraf.memorySession())
 
@@ -30,8 +32,8 @@ const recast = new TelegrafRecast(process.env.RECAST_TOKEN)
 telegraf.use(recast.middleware())
 
 //Handling libraries of the Telegraf library
-const Extra = Telegraf.Extra
-const Markup = Telegraf.Markup
+const Extra = TelegrafJS.Extra
+const Markup = TelegrafJS.Extra.Markup
 
 //Setting the current state and process to the given user
 var currentProcess = undefined;
@@ -101,7 +103,6 @@ recast.onIntent('number-answer', function * () {
     this.reply('You should reply a number');
   }
 });
-
 
 /**
  * Handler for the number intent of the application

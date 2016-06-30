@@ -39,7 +39,7 @@ exports.registerUser = (userId, context ) => {
 /**
 * Updates the process reference for the given user
 */
-exports.updateStep = ( userId, process, context ) => {
+exports.updateProcess = ( userId, process, context ) => {
   var ref = firebase.database().ref('/users/' + userId);
   ref.on("value", function(snapshot) {
     var values = {};
