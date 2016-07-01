@@ -1,121 +1,225 @@
 #!/usr/bin/env node
 
-'use strict'
+'use strict';
 
-const https = require('https')
-const Telegraf = require('telegraf')
-const TelegrafRecast = require('telegraf-recast')
-const firebase = require('firebase')
-const firebaseHandler = require('./firebase-handler')
+const https = require('https');
+const Telegraf = require('telegraf');
+const TelegrafRecast = require('telegraf-recast');
+const firebase = require('firebase');
+const q = require('q');
+const firebaseHandler = require('./firebase-handler');
 
 /* init of the firebase instance */
 firebase.initializeApp({
-  serviceAccount: "Firebase.json",
-  databaseURL: "https://cpmx7-hackathon.firebaseio.com/"
-})
+    serviceAccount: "Firebase.json",
+    databaseURL: "https://cpmx7-hackathon.firebaseio.com/"
+});
 
 const telegrafOptions = {
-  telegram: {
-  agent: new https.Agent({
-    keepAlive: true,
-    keepAliveMsecs: 5000,
-  }),
-  },
-}
+    telegram: {
+        agent: new https.Agent({
+            keepAlive: true,
+            keepAliveMsecs: 5000,
+        })
+    }
+};
 
-const TelegrafJS = require('node_modules/telegraf/lib/telegraf')
+const telegraf = new Telegraf(process.env.BOT_TOKEN, telegrafOptions);
+//telegraf.use(Telegraf.memorySession());
 
-const telegraf = new Telegraf(process.env.BOT_TOKEN, telegrafOptions)
-telegraf.use(Telegraf.memorySession())
+const recast = new TelegrafRecast(process.env.RECAST_TOKEN);
+telegraf.use(recast.middleware());
 
-const recast = new TelegrafRecast(process.env.RECAST_TOKEN)
-telegraf.use(recast.middleware())
-
-//Handling libraries of the Telegraf library
-const Extra = TelegrafJS.Extra
-const Markup = TelegrafJS.Extra.Markup
-
-//Setting the current state and process to the given user
-var currentProcess = undefined;
-var currentState = undefined;
+//Setting the current state of the user
+var currentState = 'beginning';
+var errorCount = 0;
+var failMessage = 'Parece que esa no es la respuesta que busco ahora';
 
 /**
  * Handler for the greeting of the user
  * */
 recast.onIntent('greeting', function * () {
-  /* print of the messages */
-  console.log('Intent of greeting');
+    /* we first check if the intent is applicable */
+    if( !firebaseHandler.stepCanUseIntent( currentState )){
+        errorCount ++;
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
 
-  //We just simply reply the user answer
-  this.reply('¡Hola soy Luis tu asistente de construcción personal!' +
-  '\nPara empezar con dime. ¿Qué clase de proyecto quieres realizar? ');
+    /* print of the messages */
+    //console.log('Intent of greeting: ' + currentState );
 
-  //We give the chance to the user to select the process to be followed
-  this.reply('Keyboard wrap', Extra.markup(
-    Markup.keyboard(['Reparar techo', 'Construir un cuarto',
-    'Poner piso', 'Instalar loseta'], {columns: parseInt(ctx.match[1])})
-  ))
+    //We send the init message
+    this.reply( firebaseHandler.getStepQuestion( currentState ) );
+
+    //We update the step of the user
+    currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, '');
+
+    //We ask the first question
+    this.reply( firebaseHandler.getStepQuestion( currentState ) );
 });
 
 /**
- * Handler for the process selection of the application
+ * Handler for the yes/no answers in the process
  * */
-recast.onIntent('process-selection', function * () {
-  /* print of the messages */
-  console.log('Intent of process-selection');
-  console.log(this.state.recast.intent);              // first intent
-  console.log(this.state.recast.message);
-  console.log(this.message);
+recast.onIntent('yes-no-answer', function * () {
+    /* we first check if the intent is applicable */
+    if( !firebaseHandler.stepCanUseIntent( currentState, 'yes-no-answer' )){
+        errorCount ++;
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
 
-  // Get first room entity
-  var process = this.state.recast.firstEntity('process');
+    // We obtain the answer in base of yes or no
+    var yesNoAnswer = this.state.recast.firstEntity('yes-no-answer');
+    if (yesNoAnswer) {
+        //Holder of the value
+        var value = undefined;
+        var rawString = yesNoAnswer.raw;
 
-  if( process === 'Construir un cuarto'){
-    firebaseHandler.updateProcess( process );
+        /* we parse the answer */
+        if (rawString === 'si' || rawString === 'Si' || rawString === 'SI') {
+            value = true;
+        } else {
+            value = false;
+        }
 
-    //We then proceed to the next step in the build room process
-  }else{
-    this.reply('Por el momento no soportamos ese proceso :C');
-    //We give the chance to the user to select the process to be followed
-    this.reply('Keyboard wrap', Extra.markup(
-      Markup.keyboard(['Reparar techo', 'Construir un cuarto',
-      'Poner piso', 'Instalar loseta'], {columns: parseInt(ctx.match[1])})
-    ))
-  }
+        //Updating the status value
+        currentState = firebaseHandler.updateStep(this.message.from.id, currentState, value);
+
+        if( currentState === null ){
+            //We reach the end and proceed with the link display
+            if( value ){
+                //We proceed with the display of the proper link
+                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n'+'http://page.com?userId=' + getCurrentUserId( this.message ) );
+            }else{
+                this.reply('¡Parece que es todo por hoy!\nSi quieres tus resultados en un futuro solo pidemelos.')
+            }
+        }else{
+            //We update the current state
+            this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        }
+    } else {
+        //We show the retry input text
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
 });
 
 /**
  * Handler for the number intent of the application
  * */
 recast.onIntent('number-answer', function * () {
-  /* print of the messages */
-  console.log('Intent of number-answer');
-  console.log(this.state.recast.intent);              // first intent
-  console.log(this.state.recast.message);
-  console.log(this.message);
+    /* we first check if the intent is applicable */
+    if( !firebaseHandler.stepCanUseIntent( currentState, 'number-answer')){
+        errorCount ++;
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
 
-  // Get first room entity
-  var numberAnswer = this.state.recast.firstEntity('number');
-  if( numberAnswer ){
-    //You provided the number
-    this.reply('Number ' + numberAnswer);
-  }else{
-    this.reply('You should reply a number');
-  }
+    // Get first room entity
+    var numberAnswer = this.state.recast.firstEntity('number');
+    if (numberAnswer) {
+        //We save the obtained user value
+        currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, numberAnswer.value );
+
+        //We handle the response of the next state
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    } else {
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
+});
+
+/**
+ * Handler for the area intents of the application
+ * */
+recast.onIntent('area-size', function * () {
+    /* we first check if the intent is applicable */
+    if( !firebaseHandler.stepCanUseIntent( currentState, 'area-size')){
+        errorCount ++;
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
+
+    // Get the area elements composed by entities
+    var areaElements = this.state.recast.allEntities('number');
+    if ( areaElements && areaElements.length == 2 ) {
+        //We build the elements object
+        var areaInfo = {
+            width: areaElements[0].value,
+            height: areaElements[1].value
+        };
+
+        //We save the obtained user value
+        currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, areaInfo);
+
+        //We handle the response of the next state
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    } else {
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
+});
+
+/**
+ * Handler for the floor materials available
+ * */
+recast.onIntent('floor-material', function * () {
+    /* we first check if the intent is applicable */
+    if( !firebaseHandler.stepCanUseIntent( currentState, 'floor-material' )){
+        errorCount ++;
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
+
+    // Get the floor material
+    var floorAnswer = this.state.recast.firstEntity('floor');
+    if (floorAnswer) {
+        //We save the obtained user value
+        currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, floorAnswer.value );
+
+        //We handle the response of the next state
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    } else {
+        //console.log('Error parsing the floor entity');
+
+        //We setup the fail message
+        this.reply(failMessage);
+        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    }
 });
 
 /**
  * Handler for the number intent of the application
  * */
-recast.onMessage( function * () {
-  console.log('Message handling');
-  console.log('user id: '+ this.message.from.id );
-  console.log('==== END OF MESSAGE HANDLING ====');
-
-  // We try to register the user to the database if it's not set
-  currentProcess = firebaseHandler.registerUser( this.message.from.id, this /* context */);
+recast.onMessage(function * () {
+    //console.log('==== INIT OF MESSAGE HANDLING ====');
+    // We try to register the user to the database if it's not set
+    firebaseHandler.registerUser(this.message.from.id, this /* context */);
 });
 
-telegraf.startPolling()
+/**
+ * Obtains the current user id from the reference
+ * */
+function getCurrentUserId( message ){
+    return message.from.id;
+}
 
-console.log('Bot is listening')
+telegraf.startPolling();
+
+console.log('Luis ahora te esta escuchando');
+//console.log('        ."   ".\n' +
+//                    '|  ___(\n' +
+//                    ').\' -(\n' +
+//                    ')  _/\n'+
+//                   '.\'_`(\n' +
+//                  '/ ( ,/\n' +
+//                 '/   \ ) \\.\n' +
+//                '/\'-./ \ \'.\\)\n' +
+//                '\   \  \'---;\'\n'+
+//                '|`\  \      \\\n' +
+//                '/ / \  \      \\\n' +
+//              '/ /   / /      _\\/\n'+
+//             '( \/   /_/       \   |\n' +
+//          'jgs \_)  (___)       \'._/\n');
