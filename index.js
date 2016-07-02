@@ -25,10 +25,9 @@ const telegrafOptions = {
     }
 };
 
-const telegraf = new Telegraf('259408097:AAG6FyQ1rW9Hz8I0gCGFAiFLyHvwuwEj6Hg', telegrafOptions);
-//telegraf.use(Telegraf.memorySession());
+const telegraf = new Telegraf(process.env.BOT_TOKEN, telegrafOptions);
 
-const recast = new TelegrafRecast('32b653b3dca4016c7815e9411966ff1f');
+const recast = new TelegrafRecast(process.env.RECAST_TOKEN);
 telegraf.use(recast.middleware());
 
 //Setting the current state of the user
