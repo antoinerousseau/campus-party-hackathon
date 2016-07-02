@@ -8,6 +8,7 @@ const TelegrafRecast = require('telegraf-recast');
 const firebase = require('firebase');
 const q = require('q');
 const firebaseHandler = require('./firebase-handler');
+const sessionHandler = require('./session.handler');
 
 /* init of the firebase instance */
 firebase.initializeApp({
@@ -24,10 +25,10 @@ const telegrafOptions = {
     }
 };
 
-const telegraf = new Telegraf(process.env.BOT_TOKEN, telegrafOptions);
+const telegraf = new Telegraf('259408097:AAG6FyQ1rW9Hz8I0gCGFAiFLyHvwuwEj6Hg', telegrafOptions);
 //telegraf.use(Telegraf.memorySession());
 
-const recast = new TelegrafRecast(process.env.RECAST_TOKEN);
+const recast = new TelegrafRecast('32b653b3dca4016c7815e9411966ff1f');
 telegraf.use(recast.middleware());
 
 //Setting the current state of the user
@@ -40,23 +41,30 @@ var failMessage = 'Parece que esa no es la respuesta que busco ahora';
  * */
 recast.onIntent('greeting', function * () {
     /* we first check if the intent is applicable */
-    if( !firebaseHandler.stepCanUseIntent( currentState )){
+    if( !sessionHandler.stepCanUseIntent( currentState )){
         errorCount ++;
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 
     /* print of the messages */
     //console.log('Intent of greeting: ' + currentState );
 
     //We send the init message
-    this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    this.reply( sessionHandler.getStepQuestion( currentState ) );
 
     //We update the step of the user
     currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, '');
 
     //We ask the first question
-    this.reply( firebaseHandler.getStepQuestion( currentState ) );
+    //this.reply( sessionHandler.getStepQuestion( currentState ) );
+
+    //We send a greeting picture
+    telegraf.sendPhoto( this.message.chat.id,
+        {
+            url: 'https://cpmx7-hackathon.firebaseapp.com/chatimg/greeting.png',
+            filename: 'greeting.png'
+        });
 });
 
 /**
@@ -64,10 +72,10 @@ recast.onIntent('greeting', function * () {
  * */
 recast.onIntent('yes-no-answer', function * () {
     /* we first check if the intent is applicable */
-    if( !firebaseHandler.stepCanUseIntent( currentState, 'yes-no-answer' )){
+    if( !sessionHandler.stepCanUseIntent( currentState, 'yes-no-answer' )){
         errorCount ++;
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 
     // We obtain the answer in base of yes or no
@@ -91,18 +99,19 @@ recast.onIntent('yes-no-answer', function * () {
             //We reach the end and proceed with the link display
             if( value ){
                 //We proceed with the display of the proper link
-                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n'+'http://127.0.0.1:8887/#/budget?userId=' + getCurrentUserId( this.message ) );
+                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n'+
+                    sessionHandler.generateBudgetLink( getCurrentUserId( this.message ) ) );
             }else{
                 this.reply('¡Parece que es todo por hoy!\nSi quieres tus resultados en un futuro solo pidemelos.')
             }
         }else{
             //We update the current state
-            this.reply( firebaseHandler.getStepQuestion( currentState ) );
+            this.reply( sessionHandler.getStepQuestion( currentState ) );
         }
     } else {
         //We show the retry input text
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 });
 
@@ -111,10 +120,10 @@ recast.onIntent('yes-no-answer', function * () {
  * */
 recast.onIntent('number-answer', function * () {
     /* we first check if the intent is applicable */
-    if( !firebaseHandler.stepCanUseIntent( currentState, 'number-answer')){
+    if( !sessionHandler.stepCanUseIntent( currentState, 'number-answer')){
         errorCount ++;
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 
     // Get first room entity
@@ -124,10 +133,10 @@ recast.onIntent('number-answer', function * () {
         currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, numberAnswer.value );
 
         //We handle the response of the next state
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     } else {
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 });
 
@@ -136,10 +145,10 @@ recast.onIntent('number-answer', function * () {
  * */
 recast.onIntent('area-size', function * () {
     /* we first check if the intent is applicable */
-    if( !firebaseHandler.stepCanUseIntent( currentState, 'area-size')){
+    if( !sessionHandler.stepCanUseIntent( currentState, 'area-size')){
         errorCount ++;
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 
     // Get the area elements composed by entities
@@ -155,10 +164,10 @@ recast.onIntent('area-size', function * () {
         currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, areaInfo);
 
         //We handle the response of the next state
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     } else {
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 });
 
@@ -167,10 +176,10 @@ recast.onIntent('area-size', function * () {
  * */
 recast.onIntent('floor-material', function * () {
     /* we first check if the intent is applicable */
-    if( !firebaseHandler.stepCanUseIntent( currentState, 'floor-material' )){
+    if( !sessionHandler.stepCanUseIntent( currentState, 'floor-material' )){
         errorCount ++;
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 
     // Get the floor material
@@ -180,13 +189,13 @@ recast.onIntent('floor-material', function * () {
         currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, floorAnswer.value );
 
         //We handle the response of the next state
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     } else {
         //console.log('Error parsing the floor entity');
 
         //We setup the fail message
         this.reply(failMessage);
-        return this.reply( firebaseHandler.getStepQuestion( currentState ) );
+        return this.reply( sessionHandler.getStepQuestion( currentState ) );
     }
 });
 
@@ -194,9 +203,12 @@ recast.onIntent('floor-material', function * () {
  * Handler for the number intent of the application
  * */
 recast.onMessage(function * () {
-    console.log('==== INIT OF MESSAGE HANDLING ====');
+    console.log('==== MESSAGE INCOMING ====');
+    //console.log( this.message );
+
     // We try to register the user to the database if it's not set
     firebaseHandler.registerUser(this.message.from, this /* context */);
+
 });
 
 /**
@@ -209,17 +221,17 @@ function getCurrentUserId( message ){
 telegraf.startPolling();
 
 console.log('Luis ahora te esta escuchando');
-//console.log('        ."   ".\n' +
-//                    '|  ___(\n' +
-//                    ').\' -(\n' +
-//                    ')  _/\n'+
-//                   '.\'_`(\n' +
-//                  '/ ( ,/\n' +
-//                 '/   \ ) \\.\n' +
-//                '/\'-./ \ \'.\\)\n' +
-//                '\   \  \'---;\'\n'+
-//                '|`\  \      \\\n' +
-//                '/ / \  \      \\\n' +
-//              '/ /   / /      _\\/\n'+
-//             '( \/   /_/       \   |\n' +
-//          'jgs \_)  (___)       \'._/\n');
+console.log('        ."   ".\n' +
+                    '\t       |  ___(\n' +
+                    '\t       ).\' -(\n' +
+                    '\t       )  _/\n'+
+                   '\t       .\'_`(\n' +
+                  '\t       / ( ,/\n' +
+                 '\t       /   \ ) \\.\n' +
+                '\t       /\'-./ \ \'.\\)\n' +
+                '\t\      \  \'---;\'\n'+
+                '\t      |`\  \      \\\n' +
+                '\t     / / \  \      \\\n' +
+              '\t    / /   / /      _\\/\n'+
+             '\t   ( \/   /_/      \   |\n' +
+          '\tjgs \_)  (___)       \'._/\n');
