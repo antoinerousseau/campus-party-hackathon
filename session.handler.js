@@ -57,6 +57,7 @@ var questionsForState = {
  * Gets the question to be asked for the current step
  * */
 function getStepQuestion( stepName ){
+    console.log('step name:'  + stepName );
     /* we validate if we are at the end of the chain */
     return questionsForState[ stepName ];
 }
@@ -98,3 +99,14 @@ function generateBudgetLink( userId ){
     return 'https://cpmx7-hackathon.firebaseapp.com/index.html#/budget?userId=' + userId;
 }
 exports.generateBudgetLink = generateBudgetLink;
+
+/**
+ * Obtains the current user id in base of the message object
+ * */
+/**
+ * Obtains the current user id from the reference
+ * */
+function getCurrentUserId(message) {
+    return message.from.id;
+}
+exports.getCurrentUserId = getCurrentUserId;
