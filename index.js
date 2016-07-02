@@ -31,8 +31,8 @@ const recast = new TelegrafRecast(process.env.RECAST_TOKEN);
 telegraf.use(recast.middleware());
 
 //Setting the current state of the user
-var currentState = {};
 var defaultState = 'beginning';
+var currentState = defaultState;
 var errorCount = 0;
 var failMessage = 'Parece que esa no es la respuesta que busco ahora';
 
@@ -44,26 +44,26 @@ recast.onIntent('greeting', function * () {
 
     //Getting the current user id
     var currentUserId = sessionHandler.getCurrentUserId( this.message );
-    currentState[ currentUserId ] = defaultState;
+    currentState = defaultState;
 
     /* we first check if the intent is applicable */
-    if (!sessionHandler.stepCanUseIntent(currentState[ currentUserId ])) {
+    if (!sessionHandler.stepCanUseIntent(currentState)) {
         errorCount++;
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     //We send the init message
-    this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+    this.reply(sessionHandler.getStepQuestion(currentState));
 
     //We update the step of the user
-    currentState[ currentUserId ] = firebaseHandler.updateStep( currentUserId, currentState[ currentUserId ], '');
+    currentState = firebaseHandler.updateStep( currentUserId, currentState, '');
 
     //We send a greeting picture
     telegraf.sendPhoto(this.message.chat.id,
         {
-            url: 'https://cpmx7-hackathon.firebaseapp.com/chatimg/greeting.png',
-            filename: 'greeting.png'
+            url: 'https://cpmx7-hackathon.firebaseapp.com/chatimg/room.jpeg',
+            filename: 'room.jpeg'
         });
 });
 
@@ -74,16 +74,16 @@ recast.onIntent('yes-no-answer', function * () {
     console.log('yes no answer');
     var currentUserId = sessionHandler.getCurrentUserId( this.message );
 
-    if( !currentState[ currentUserId ] ){
+    if( !currentState ){
         /* do nothing, there seems to be a bug with the Recast AI */
         return;
     }
 
     /* we first check if the intent is applicable */
-    if (!sessionHandler.stepCanUseIntent(currentState[ currentUserId ], 'yes-no-answer')) {
+    if (!sessionHandler.stepCanUseIntent(currentState, 'yes-no-answer')) {
         errorCount++;
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     /* we try to find if there's a yes or a no declaration */
@@ -93,15 +93,15 @@ recast.onIntent('yes-no-answer', function * () {
     /* validating if the user is trying to confuse us LOL */
     if( yesAnswer && noAnswer || ( !yesAnswer && !noAnswer ) ){
         this.reply('Parece que no estas seguro, intententemos ser más concisos');
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }else{
         /* we define the kind of answer */
         var value = ( yesAnswer ? true : false );
 
         //Updating the status value
-        currentState[ currentUserId ]= firebaseHandler.updateStep( currentUserId, currentState[ currentUserId ], value);
+        currentState= firebaseHandler.updateStep( currentUserId, currentState, value);
 
-        if (currentState[ currentUserId ] === null) {
+        if (currentState === null) {
             //We reach the end and proceed with the link display
             if (value) {
                 //We proceed with the display of the proper link
@@ -112,7 +112,7 @@ recast.onIntent('yes-no-answer', function * () {
             }
         } else {
             //We update the current state
-            this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+            this.reply(sessionHandler.getStepQuestion(currentState));
         }
     }
 });
@@ -125,20 +125,20 @@ recast.onIntent('number-answer', function * () {
     var currentUserId = sessionHandler.getCurrentUserId( this.message );
 
     /* we first check if the intent is applicable */
-    if (!sessionHandler.stepCanUseIntent(currentState[ currentUserId ], 'number-answer')) {
+    if (!sessionHandler.stepCanUseIntent(currentState, 'number-answer')) {
         errorCount++;
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // Get first room entity
     var numberAnswer = this.state.recast.firstEntity('number');
     if (numberAnswer) {
         //We save the obtained user value
-        currentState[ currentUserId ]= firebaseHandler.updateStep( currentUserId, currentState[ currentUserId ], numberAnswer.value);
+        currentState= firebaseHandler.updateStep( currentUserId, currentState, numberAnswer.value);
 
         //We handle the response of the next state
-        if (currentState[ currentUserId ] == 'roomSize') {
+        if (currentState == 'roomSize') {
             /* we display a helper image with the dimensions */
             telegraf.sendPhoto(this.message.chat.id,
                 {
@@ -147,10 +147,10 @@ recast.onIntent('number-answer', function * () {
                 });
         }
 
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     } else {
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
 
@@ -169,10 +169,10 @@ recast.onIntent('area-size', function * () {
     var currentUserId = sessionHandler.getCurrentUserId( this.message );
 
     /* we first check if the intent is applicable */
-    if (!sessionHandler.stepCanUseIntent(currentState[ currentUserId ], 'area-size')) {
+    if (!sessionHandler.stepCanUseIntent(currentState, 'area-size')) {
         errorCount++;
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // Get the area elements composed by entities
@@ -185,13 +185,13 @@ recast.onIntent('area-size', function * () {
         };
 
         //We save the obtained user value
-        currentState[ currentUserId ] = firebaseHandler.updateStep( currentUserId, currentState[ currentUserId ], areaInfo);
+        currentState = firebaseHandler.updateStep( currentUserId, currentState, areaInfo);
 
         //We handle the response of the next state
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     } else {
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
 
@@ -203,26 +203,26 @@ recast.onIntent('floor-material', function * () {
     var currentUserId = sessionHandler.getCurrentUserId( this.message );
 
     /* we first check if the intent is applicable */
-    if (!sessionHandler.stepCanUseIntent(currentState[ currentUserId ], 'floor-material')) {
+    if (!sessionHandler.stepCanUseIntent(currentState, 'floor-material')) {
         errorCount++;
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // Get the floor material
     var floorAnswer = this.state.recast.firstEntity('floor');
     if (floorAnswer) {
         //We save the obtained user value
-        currentState[ currentUserId ] = firebaseHandler.updateStep(currentUserId, currentState[ currentUserId ], floorAnswer.value);
+        currentState = firebaseHandler.updateStep(currentUserId, currentState, floorAnswer.value);
 
         //We handle the response of the next state
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     } else {
         //console.log('Error parsing the floor entity');
 
         //We setup the fail message
         this.reply(failMessage);
-        return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
 

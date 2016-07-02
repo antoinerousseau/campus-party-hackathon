@@ -7,13 +7,23 @@
 /**
  * Definition of the steps of the builder
  * */
+//var steps = [
+//    'beginning',
+//    'isRepair',
+//    'numberOfRooms',
+//    'roomSize',
+//    'windowCount',
+//    'doorCount',
+//    'isPainted',
+//    'weeklyIncome',
+//    'selfBuilt',
+//    'end'
+//];
+
 var steps = [
     'beginning',
-    'isRepair',
-    'numberOfRooms',
     'roomSize',
     'windowCount',
-    'doorCount',
     'isPainted',
     'weeklyIncome',
     'selfBuilt',
@@ -41,7 +51,7 @@ var intentsOfState = {
  * */
 var questionsForState = {
     'beginning' : '¡Hola soy Juan tu asistente de construcción personal!\n' +
-    'Por ahora solo tengo información para asesorarte en la construcción de un cuarto\n¿Es la construcción una ampliación?',
+    'Por ahora solo tengo información para asesorarte en la construcción de un cuarto\n¿Cual es el área del cuarto? (Ejemplo: 4m x 4m)',
     'isRepair': '¿Es la construcción una ampliación?',
     'numberOfRooms': '¿Cuantos cuartos ya tienes en tu casa?',
     'roomSize': '¿Cual es el área del cuarto? (Ejemplo: 4m x 4m)',
@@ -58,7 +68,8 @@ var questionsForState = {
  * */
 function getStepQuestion( stepName ){
     /* we validate if we are at the end of the chain */
-    return questionsForState[ stepName ];
+    var stepQuestion = questionsForState[ stepName ];
+    return stepQuestion ? stepQuestion : '';
 }
 exports.getStepQuestion = getStepQuestion;
 
