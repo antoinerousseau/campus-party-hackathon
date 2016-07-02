@@ -74,6 +74,11 @@ recast.onIntent('yes-no-answer', function * () {
     console.log('yes no answer');
     var currentUserId = sessionHandler.getCurrentUserId( this.message );
 
+    if( !currentState[ currentUserId ] ){
+        /* do nothing, there seems to be a bug with the Recast AI */
+        return;
+    }
+
     /* we first check if the intent is applicable */
     if (!sessionHandler.stepCanUseIntent(currentState[ currentUserId ], 'yes-no-answer')) {
         errorCount++;
@@ -133,7 +138,7 @@ recast.onIntent('number-answer', function * () {
         currentState[ currentUserId ]= firebaseHandler.updateStep( currentUserId, currentState[ currentUserId ], numberAnswer.value);
 
         //We handle the response of the next state
-        if (currentState == 'roomSize') {
+        if (currentState[ currentUserId ] == 'roomSize') {
             /* we display a helper image with the dimensions */
             telegraf.sendPhoto(this.message.chat.id,
                 {
@@ -147,6 +152,13 @@ recast.onIntent('number-answer', function * () {
         this.reply(failMessage);
         return this.reply(sessionHandler.getStepQuestion(currentState[ currentUserId ]));
     }
+});
+
+/**
+ * Handle the start intent
+ * */
+recast.onIntent('start', function * (){
+   console.log('start...');
 });
 
 /**
