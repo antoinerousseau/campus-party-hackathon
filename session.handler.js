@@ -40,14 +40,14 @@ var intentsOfState = {
  * Declarations of the intents that can be handled in a given state
  * */
 var questionsForState = {
-    'beginning' : '¡Hola soy Luis tu asistente de construcción personal!\n' +
+    'beginning' : '¡Hola soy Juan tu asistente de construcción personal!\n' +
     'Por ahora solo tengo información para asesorarte en la construcción de un cuarto\n¿Es la construcción una ampliación?',
     'isRepair': '¿Es la construcción una ampliación?',
-    'numberOfRooms': '¿Cuantos cuartos posee la casa?',
+    'numberOfRooms': '¿Cuantos cuartos ya tienes en tu casa?',
     'roomSize': '¿Cual es el área del cuarto? (Ejemplo: 4m x 4m)',
-    'windowCount': '¿Cuantas ventanas deseas que tenga el cuarto?',
+    'windowCount': '¿Cuantas ventanas quieres que haya en tu nuevo cuarto?',
     'doorCount': '¿Cuantas puertas deseas que tenga el cuarto?',
-    'isPainted': '¿Deseas pintar el cuarto?',
+    'isPainted': '¿Vas a pintar tu el cuarto?',
     'weeklyIncome': '¿Cual es tu ingreso semanal?',
     'selfBuilt': '¿Lo construyes tu mismo?',
     'end' : '¡Con eso sería todo! ¿Quieres ver mi recomendación?'

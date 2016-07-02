@@ -41,26 +41,26 @@ var failMessage = 'Parece que esa no es la respuesta que busco ahora';
  * */
 recast.onIntent('greeting', function * () {
     /* we first check if the intent is applicable */
-    if( !sessionHandler.stepCanUseIntent( currentState )){
-        errorCount ++;
+    if (!sessionHandler.stepCanUseIntent(currentState)) {
+        errorCount++;
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     /* print of the messages */
     //console.log('Intent of greeting: ' + currentState );
 
     //We send the init message
-    this.reply( sessionHandler.getStepQuestion( currentState ) );
+    this.reply(sessionHandler.getStepQuestion(currentState));
 
     //We update the step of the user
-    currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, '');
+    currentState = firebaseHandler.updateStep(getCurrentUserId(this.message), currentState, '');
 
     //We ask the first question
     //this.reply( sessionHandler.getStepQuestion( currentState ) );
 
     //We send a greeting picture
-    telegraf.sendPhoto( this.message.chat.id,
+    telegraf.sendPhoto(this.message.chat.id,
         {
             url: 'https://cpmx7-hackathon.firebaseapp.com/chatimg/greeting.png',
             filename: 'greeting.png'
@@ -72,10 +72,10 @@ recast.onIntent('greeting', function * () {
  * */
 recast.onIntent('yes-no-answer', function * () {
     /* we first check if the intent is applicable */
-    if( !sessionHandler.stepCanUseIntent( currentState, 'yes-no-answer' )){
-        errorCount ++;
+    if (!sessionHandler.stepCanUseIntent(currentState, 'yes-no-answer')) {
+        errorCount++;
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // We obtain the answer in base of yes or no
@@ -83,10 +83,11 @@ recast.onIntent('yes-no-answer', function * () {
     if (yesNoAnswer) {
         //Holder of the value
         var value = undefined;
-        var rawString = yesNoAnswer.raw;
+        var rawString = yesNoAnswer.raw.toLowerCase();
 
         /* we parse the answer */
-        if (rawString === 'si' || rawString === 'Si' || rawString === 'SI') {
+        if (contains(rawString, 'si') || contains(rawString, 'awebo') || contains(rawString, 'claro') ||
+            contains(rawString, 'yep') || contains(rawString, 'clarin')) {
             value = true;
         } else {
             value = false;
@@ -95,48 +96,64 @@ recast.onIntent('yes-no-answer', function * () {
         //Updating the status value
         currentState = firebaseHandler.updateStep(this.message.from.id, currentState, value);
 
-        if( currentState === null ){
+        if (currentState === null) {
             //We reach the end and proceed with the link display
-            if( value ){
+            if (value) {
                 //We proceed with the display of the proper link
-                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n'+
-                    sessionHandler.generateBudgetLink( getCurrentUserId( this.message ) ) );
-            }else{
+                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n' +
+                    sessionHandler.generateBudgetLink(getCurrentUserId(this.message)));
+            } else {
                 this.reply('¡Parece que es todo por hoy!\nSi quieres tus resultados en un futuro solo pidemelos.')
             }
-        }else{
+        } else {
             //We update the current state
-            this.reply( sessionHandler.getStepQuestion( currentState ) );
+            this.reply(sessionHandler.getStepQuestion(currentState));
         }
     } else {
         //We show the retry input text
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
+
+/**
+ * Helper function for detecting if the string is contained
+ * */
+function contains(string, substring) {
+    return string.indexOf(substring) > -1;
+}
 
 /**
  * Handler for the number intent of the application
  * */
 recast.onIntent('number-answer', function * () {
     /* we first check if the intent is applicable */
-    if( !sessionHandler.stepCanUseIntent( currentState, 'number-answer')){
-        errorCount ++;
+    if (!sessionHandler.stepCanUseIntent(currentState, 'number-answer')) {
+        errorCount++;
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // Get first room entity
     var numberAnswer = this.state.recast.firstEntity('number');
     if (numberAnswer) {
         //We save the obtained user value
-        currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, numberAnswer.value );
+        currentState = firebaseHandler.updateStep(getCurrentUserId(this.message), currentState, numberAnswer.value);
 
         //We handle the response of the next state
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        if (currentState == 'roomSize') {
+            /* we display a helper image with the dimensions */
+            telegraf.sendPhoto(this.message.chat.id,
+                {
+                    url: 'https://cpmx7-hackathon.firebaseapp.com/chatimg/room.jpeg',
+                    filename: 'room.jpeg'
+                });
+        }
+
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     } else {
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
 
@@ -145,15 +162,15 @@ recast.onIntent('number-answer', function * () {
  * */
 recast.onIntent('area-size', function * () {
     /* we first check if the intent is applicable */
-    if( !sessionHandler.stepCanUseIntent( currentState, 'area-size')){
-        errorCount ++;
+    if (!sessionHandler.stepCanUseIntent(currentState, 'area-size')) {
+        errorCount++;
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // Get the area elements composed by entities
     var areaElements = this.state.recast.allEntities('number');
-    if ( areaElements && areaElements.length == 2 ) {
+    if (areaElements && areaElements.length == 2) {
         //We build the elements object
         var areaInfo = {
             width: areaElements[0].value,
@@ -161,13 +178,13 @@ recast.onIntent('area-size', function * () {
         };
 
         //We save the obtained user value
-        currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, areaInfo);
+        currentState = firebaseHandler.updateStep(getCurrentUserId(this.message), currentState, areaInfo);
 
         //We handle the response of the next state
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     } else {
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
 
@@ -176,26 +193,26 @@ recast.onIntent('area-size', function * () {
  * */
 recast.onIntent('floor-material', function * () {
     /* we first check if the intent is applicable */
-    if( !sessionHandler.stepCanUseIntent( currentState, 'floor-material' )){
-        errorCount ++;
+    if (!sessionHandler.stepCanUseIntent(currentState, 'floor-material')) {
+        errorCount++;
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 
     // Get the floor material
     var floorAnswer = this.state.recast.firstEntity('floor');
     if (floorAnswer) {
         //We save the obtained user value
-        currentState = firebaseHandler.updateStep( getCurrentUserId( this.message ), currentState, floorAnswer.value );
+        currentState = firebaseHandler.updateStep(getCurrentUserId(this.message), currentState, floorAnswer.value);
 
         //We handle the response of the next state
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     } else {
         //console.log('Error parsing the floor entity');
 
         //We setup the fail message
         this.reply(failMessage);
-        return this.reply( sessionHandler.getStepQuestion( currentState ) );
+        return this.reply(sessionHandler.getStepQuestion(currentState));
     }
 });
 
@@ -214,7 +231,7 @@ recast.onMessage(function * () {
 /**
  * Obtains the current user id from the reference
  * */
-function getCurrentUserId( message ){
+function getCurrentUserId(message) {
     return message.from.id;
 }
 
@@ -222,16 +239,16 @@ telegraf.startPolling();
 
 console.log('Luis ahora te esta escuchando');
 console.log('        ."   ".\n' +
-                    '\t       |  ___(\n' +
-                    '\t       ).\' -(\n' +
-                    '\t       )  _/\n'+
-                   '\t       .\'_`(\n' +
-                  '\t       / ( ,/\n' +
-                 '\t       /   \ ) \\.\n' +
-                '\t       /\'-./ \ \'.\\)\n' +
-                '\t\      \  \'---;\'\n'+
-                '\t      |`\  \      \\\n' +
-                '\t     / / \  \      \\\n' +
-              '\t    / /   / /      _\\/\n'+
-             '\t   ( \/   /_/      \   |\n' +
-          '\tjgs \_)  (___)       \'._/\n');
+    '\t       |  ___(\n' +
+    '\t       ).\' -(\n' +
+    '\t       )  _/\n' +
+    '\t       .\'_`(\n' +
+    '\t       / ( ,/\n' +
+    '\t       /   \ ) \\.\n' +
+    '\t       /\'-./ \ \'.\\)\n' +
+    '\t\      \  \'---;\'\n' +
+    '\t      |`\  \      \\\n' +
+    '\t     / / \  \      \\\n' +
+    '\t    / /   / /      _\\/\n' +
+    '\t   ( \/   /_/      \   |\n' +
+    '\tjgs \_)  (___)       \'._/\n');
