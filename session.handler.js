@@ -57,7 +57,6 @@ var questionsForState = {
  * Gets the question to be asked for the current step
  * */
 function getStepQuestion( stepName ){
-    console.log('step name:'  + stepName );
     /* we validate if we are at the end of the chain */
     return questionsForState[ stepName ];
 }

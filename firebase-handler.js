@@ -56,7 +56,6 @@ exports.updateStep = function (userId, stepName, value) {
     }
 
     //We proceed with the update of the reference database
-    console.log('user id: ' + userId);
     firebase.database().ref('/users/' + userId + '/stateInfo/').update(updateData);
 
     //We return the reference of the next step to the ui
