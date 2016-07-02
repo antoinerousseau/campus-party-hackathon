@@ -93,8 +93,8 @@ exports.getNextStep = getNextStep;
 /**
  * Registers the current user in the telegram database
  * */
-exports.registerUser = function (userId, context) {
-    var ref = firebase.database().ref('/users/' + userId);
+exports.registerUser = function (user, context) {
+    var ref = firebase.database().ref('/users/' + user.id);
     ref.on("value", function (snapshot) {
         var values;
         if (snapshot.val() != null) {
@@ -104,13 +104,15 @@ exports.registerUser = function (userId, context) {
         /* object to be saved to firebase if the user is not registered  */
         if (!values) {
             values = {
-                id: userId,
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
                 client: 'telegram',
                 process: 'default'
             };
 
             //We save the instance data in the DB
-            firebase.database().ref("/users/" + userId).set(values);
+            firebase.database().ref("/users/" + user.id).set(values);
         } else {
             /* nothing to do */
         }

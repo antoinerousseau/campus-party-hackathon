@@ -19,7 +19,7 @@ const telegrafOptions = {
     telegram: {
         agent: new https.Agent({
             keepAlive: true,
-            keepAliveMsecs: 5000,
+            keepAliveMsecs: 5000
         })
     }
 };
@@ -91,7 +91,7 @@ recast.onIntent('yes-no-answer', function * () {
             //We reach the end and proceed with the link display
             if( value ){
                 //We proceed with the display of the proper link
-                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n'+'http://page.com?userId=' + getCurrentUserId( this.message ) );
+                this.reply('¡Hemos terminado!\nHaz click en este enlace para ver lo que considero mejor para ti:\n'+'http://127.0.0.1:8887/#/budget?userId=' + getCurrentUserId( this.message ) );
             }else{
                 this.reply('¡Parece que es todo por hoy!\nSi quieres tus resultados en un futuro solo pidemelos.')
             }
@@ -194,9 +194,9 @@ recast.onIntent('floor-material', function * () {
  * Handler for the number intent of the application
  * */
 recast.onMessage(function * () {
-    //console.log('==== INIT OF MESSAGE HANDLING ====');
+    console.log('==== INIT OF MESSAGE HANDLING ====');
     // We try to register the user to the database if it's not set
-    firebaseHandler.registerUser(this.message.from.id, this /* context */);
+    firebaseHandler.registerUser(this.message.from, this /* context */);
 });
 
 /**
